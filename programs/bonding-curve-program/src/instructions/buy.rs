@@ -6,6 +6,7 @@ use anchor_spl::{
 };
 
 use crate::{constants::*, states::LiquidityPool};
+use std::f64::consts::E;
 
 #[derive(Accounts)]
 pub struct Buy<'info> {
@@ -124,4 +125,63 @@ impl<'info> Buy<'info> {
         }
         Ok(())
     }
+
+    pub fn buy_exponent(&mut self, amount: u64, bumps: &BuyBumps, swap_a: bool) -> Result<()> {
+        let price_per_token = if swap_a {
+            10.00 * E.powf(1 as f64 * self.mint_a.supply as f64)
+        } else {
+            10.00 * E.powf(1 as f64 * self.mint_a.supply as f64)
+        };
+
+        let total_price = amount as f64 * price_per_token;
+
+        let transfer_accounts = Transfer {
+            from: self.buyer.to_account_info(),
+            to: self.reserve.to_account_info(),
+        };
+
+        let cpi_context = CpiContext::new(self.system_program.to_account_info(), transfer_accounts);
+
+        transfer(cpi_context, total_price as u64)?;
+
+        let authority_bump = bumps.pool_authority;
+        let authority_seed = &[
+            &self.mint_a.key().to_bytes(),
+            &self.mint_b.key().to_bytes(),
+            AUTHORITY_SEED,
+            &[authority_bump],
+        ];
+
+        let signer_seeds = &[&authority_seed[..]];
+
+        if swap_a {
+            token::transfer(
+                CpiContext::new_with_signer(
+                    self.token_program.to_account_info(),
+                    TokenTransfer {
+                        from: self.pool_account_a.to_account_info(),
+                        to: self.buyer_account_mint.to_account_info(),
+                        authority: self.pool_authority.to_account_info(),
+                    },
+                    signer_seeds,
+                ),
+                amount,
+            )?;
+        } else {
+            token::transfer(
+                CpiContext::new_with_signer(
+                    self.token_program.to_account_info(),
+                    TokenTransfer {
+                        from: self.pool_account_b.to_account_info(),
+                        to: self.buyer_account_mint.to_account_info(),
+                        authority: self.pool_authority.to_account_info(),
+                    },
+                    signer_seeds,
+                ),
+                amount,
+            )?;
+        }
+        Ok(())
+    }
+
 }
