@@ -16,7 +16,6 @@ use crate::{
     constants::*
 };
 use fixed::types::I64F64;
-use half::f16;
 
 #[derive(Accounts)]
 pub struct Swap<'info> {
@@ -203,15 +202,3 @@ let authority_seed = &[
 }
 
 
-
-fn calculate_fee(delta: u16) -> u64 {
-    let delta_formatted =  f16::from_bits(delta);
-
-    if delta_formatted > f16::from_f32(-0.25) && delta_formatted < f16::from_f32(0.33) {
-        return 3;
-    } if delta_formatted > f16::from_f32(-0.25) && delta_formatted < f16::from_f32(0.33) {
-
-    }
-
-    2
-}

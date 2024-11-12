@@ -6,7 +6,6 @@ use anchor_spl::{
 };
 
 use fixed::types::I64F64;
-use half::f16;
 use crate::{
     constants::*,
     states::*,

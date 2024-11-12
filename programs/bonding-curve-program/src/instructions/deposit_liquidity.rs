@@ -4,7 +4,6 @@ use anchor_spl::{
     token::{self, Mint, MintTo, Token, TokenAccount, Transfer},
 };
 use fixed::types::I64F64;
-use half::f16;
 use crate::{constants::*, states::*, constants::MINIMUM_LIQUIDITY, errors::Errors};
 
 pub fn deposit_liquidity(
