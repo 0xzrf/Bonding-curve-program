@@ -18,6 +18,12 @@ pub struct CreatePool<'info> {
     )]
     pub pool_authority: AccountInfo<'info>,
     #[account(
+        mut, 
+        seeds = [b"reserve" , liquidity_pool.key().as_ref()],
+        bump
+    )]
+    pub reserve: SystemAccount<'info>,
+    #[account(
             init,
             seeds = [b"liquidity_pool", mint_a.key().as_ref(), mint_b.key().as_ref()],
             bump,
@@ -62,7 +68,7 @@ pub fn create_pool(ctx: Context<CreatePool>)-> Result<()> {
         mint_a: ctx.accounts.mint_a.key(),
         mint_b: ctx.accounts.mint_b.key(),
         bump: ctx.bumps.liquidity_pool,
-        delta: 0
+        reserve_bump: ctx.bumps.reserve
     });
 
     Ok(())

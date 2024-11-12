@@ -28,8 +28,7 @@ pub fn deposit_liquidity(
     let pool_b = &ctx.accounts.pool_account_b;
     // Checks if there already exists liquidity in the pool or this is the first deposit in the pool
     let pool_creation = pool_a.amount == 0 && pool_b.amount == 0;
-    let pool_a_initial = pool_a.amount;
-    let pool_b_initial = pool_b.amount;
+
     //Assign amount_a and amount_b based on the constant of the pool so that the proportion of the pool remains the same and isn't disturbed due to
     // the additional deposit
     let (amount_a, amount_b) = if pool_creation {
@@ -124,19 +123,6 @@ token::transfer(
             ),
             liquidity
         )?;
-
-        if !pool_creation {
-            ctx.accounts.pool_account_a.reload()?;
-            ctx.accounts.pool_account_b.reload()?;
-    
-    
-            let delta: f16 = f16::from_f32(
-                (pool_a_initial as f32 / pool_b_initial as f32) // Tokens before deposit 
-                / (ctx.accounts.pool_account_a.amount as f32 / ctx.accounts.pool_account_b.amount as f32) // Amount of tokens after the deposit
-             );
-            let delta_bits = delta.to_bits();
-            ctx.accounts.liquidity_pool.delta = delta_bits;
-        }
         
         Ok(())
     }

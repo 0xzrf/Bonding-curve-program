@@ -93,13 +93,9 @@ pub fn swap(ctx: Context<Swap>, swap_a: bool, input_amount: u64, min_amount_out:
     } else {
         input_amount
     };
-    
-    let pool_a_initial = ctx.accounts.pool_account_a.amount;
-    let pool_b_initial = ctx.accounts.pool_account_b.amount;
 
-    let fee = calculate_fee(ctx.accounts.liquidity_pool.delta);
 
-    let taxed_amount = (input * fee)/ 1000;
+    let taxed_amount = (input * 100)/ 1000;
     let pool_a = &ctx.accounts.pool_account_a;
     let pool_b = &ctx.accounts.pool_account_b;
     
@@ -199,15 +195,6 @@ let authority_seed = &[
     // Verify the invariant still holds
     // Reload accounts because of the CPIs
     // We tolerate if the new invariant is higher because it means a rounding error for LPs
-    ctx.accounts.pool_account_a.reload()?;
-    ctx.accounts.pool_account_b.reload()?;
-
-    let delta: f16 = f16::from_f32(
-        (pool_a_initial as f32 / pool_b_initial as f32) // Tokens before deposit 
-        / (ctx.accounts.pool_account_a.amount as f32 / ctx.accounts.pool_account_b.amount as f32) // Amount of tokens after the deposit
-     );
-    let delta_bits = delta.to_bits();
-    ctx.accounts.liquidity_pool.delta = delta_bits;
 
     if invariance > ctx.accounts.pool_account_a.amount * ctx.accounts.pool_account_a.amount {
         return err!(Errors::InvarianceViolated);

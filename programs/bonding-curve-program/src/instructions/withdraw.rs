@@ -17,8 +17,6 @@ use crate::{
 pub fn widthdraw_lp(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
 
     require!(ctx.accounts.withdraw_liquidity.amount >= amount,Errors::InvalidWithdrawAmount); // Checks if the user is trying to call the function with liquidity amount more that they own
-    let pool_a_initial = ctx.accounts.pool_account_a.amount;
-    let pool_b_initial = ctx.accounts.pool_account_b.amount;
 
     let authroity_bumps = ctx.bumps.pool_authority;
     let authority_seeds = &[
@@ -93,14 +91,6 @@ pub fn widthdraw_lp(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
 
     ctx.accounts.pool_account_a.reload()?;
     ctx.accounts.pool_account_b.reload()?;
-
-    // stores the new delta of the pool
-    let delta: f16 = f16::from_f32(
-        (pool_a_initial as f32 / pool_b_initial as f32) // Tokens before deposit 
-        / (ctx.accounts.pool_account_a.amount as f32 / ctx.accounts.pool_account_b.amount as f32) // Amount of tokens after the deposit
-     );
-    let delta_bits = delta.to_bits();
-    ctx.accounts.liquidity_pool.delta = delta_bits;
 
     Ok(())
 
